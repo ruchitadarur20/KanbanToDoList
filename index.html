@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -254,8 +255,6 @@ function createTaskElement(taskText, columnId, startDate, priority, endDate = nu
     return task;
 }
 
-
-
         function moveTask(task, targetColumnId, startDate, priority) {
             const targetList = document.querySelector(`#${targetColumnId} .task-list`);
             const taskText = task.querySelector("span").textContent;
@@ -328,7 +327,8 @@ function createTaskElement(taskText, columnId, startDate, priority, endDate = nu
                 }
             });
         }
-        
+        <link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
     </script>
 </body>
 </html> 
