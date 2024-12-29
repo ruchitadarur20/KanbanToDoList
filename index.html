@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban To-Do List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #4b82ef;
+            color: var(--text-color);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 70px;
+            background-color: #a6a6da;
+                }
+
+        .header h1 {
+            margin: 0;
+        }
+
+        .filter-container {
+            margin: 20px;
+            text-align: center;
+        }
+
+        .board {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+        }
+
+        .column {
+            background-color: #060760;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 30%;
+            padding: 10px;
+        }
+
+        .column h2 {
+            text-align: center;
+            background-color: rgb(249, 252, 252);
+            color: black;
+        }
+
+        .task {
+        background-color: #e3e3e3;
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 3px;
+        }
+
+        .task span {
+        display: block; /* Ensures each span is displayed as a block element */
+        margin-bottom: 5px; /* Optional: Adds space between lines */
+        }
+
+        .task button {
+            margin: 5px 5px 0 0;
+            padding: 5px 10px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 3px;
+        }
+
+        .task button:hover {
+            background-color: #0056b3;
+        }
+
+        .task button.delete {
+            background-color: #dc3545;
+        }
+
+        .task button.delete:hover {
+            background-color: #a71d2a;
+        }
+
+        .task.high {
+        background-color: #ec7b84; /* Light red */
+        border: 1px solid #f5c6cb;
+        }
+
+        .task.medium {
+        background-color: #edd37e; /* Light yellow */
+        border: 1px solid #ffeeba;
+        }
+
+        .task.low {
+    background-color: #81e798; /* Light green */
+    border: 1px solid #c3e6cb;
+    }  
+    .task button.done {
+    background-color: #28a745; /* Green for Done */
+    color: white;
+}
+
+.task button.done:hover {
+    background-color: #218838; /* Darker green on hover */
+}
+
+.task {
+    background-color: #e3e3e3;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 3px;
+    transition: all 0.3s ease-in-out; /* Smooth transition */
+}
+
+.task-list {
+    min-height: 50px;
+    transition: all 0.3s ease-in-out; /* Smooth list height adjustment */
+}
+
+.task:hover {
+    transform: scale(1.05); /* Optional: Adds a hover effect */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Optional: Adds shadow for hover */
+}
+.logo {
+    max-width: 50px;
+    height: auto;
+    margin-left: 10px;
+}
+    </style>
+</style>
+</head>
+<body>
+   
+    <div class="header">
+        <h1>Kanban To-Do List</h1>
+        <img src="https://example.com/kanban-logo.jpg" alt="Kanban Logo" class="logo">
+    </div>
+        
+    <div class="board">
+        <div class="column" id="todo">
+            <h2>To-Do</h2>
+            <form class="add-task-form" id="todo-form">
+                <input type="text" placeholder="Add a new task" id="todo-input">
+                <input type="date" id="todo-date">
+                <select id="todo-priority">
+                    <option value="high">High</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="low">Low</option>
+                </select>
+                <button type="button" onclick="addTask('todo')">+</button>
+            </form>
+            <div class="task-list"></div>
+        </div>
+        <div class="column" id="in-progress">
+            <h2>In Progress</h2>
+            <div class="task-list"></div>
+        </div>
+        <div class="column" id="done">
+            <h2> Done</h2>
+            <div class="task-list"></div>
+        </div>
+    </div>
+    <script>
+      function addTask(columnId) {
+            const input = document.querySelector(`#${columnId}-input`);
+            const dateInput = document.querySelector(`#${columnId}-date`);
+            const priorityInput = document.querySelector(`#${columnId}-priority`);
+            const taskList = document.querySelector(`#${columnId} .task-list`);
+            console.log("Adding task with priority:", priorityInput.value);
+
+            if (input.value.trim() !== "" && dateInput.value !== "") {
+                const priority = document.querySelector(`#${columnId}-priority`).value;
+                const task = createTaskElement(input.value, columnId, dateInput.value, priority);
+                taskList.appendChild(task);
+                input.value = "";
+                dateInput.value = "";
+                priorityInput.value = "medium";
+                saveTasks();
+            }
+        }
+
+function createTaskElement(taskText, columnId, startDate, priority, endDate = null) {
+    const task = document.createElement("div");
+    task.className = `task ${priority}`;
+    task.style.opacity = 0; // Initially transparent for animation
+
+    // Task Title
+    const text = document.createElement("span");
+    text.textContent = taskText;
+    task.appendChild(text);
+
+    // Task Date
+    const dateInfo = document.createElement("span");
+    dateInfo.textContent = `Start: ${startDate}`;
+    task.appendChild(dateInfo);
+
+    // End Date (if exists)
+    if (endDate) {
+        const endDateInfo = document.createElement("span");
+        endDateInfo.textContent = `End: ${endDate}`;
+        task.appendChild(endDateInfo);
+    }
+
+    // Buttons container
+    const buttons = document.createElement("div");
+
+    // Buttons for "To-Do" Column
+    if (columnId === "todo") {
+        const moveToInProgress = document.createElement("button");
+        moveToInProgress.textContent = "In Progress";
+        moveToInProgress.onclick = () => moveTask(task, "in-progress", startDate, priority);
+        buttons.appendChild(moveToInProgress);
+    }
+
+    // Buttons for "In Progress" Column
+    if (columnId === "in-progress") {
+        const moveToDone = document.createElement("button");
+        moveToDone.textContent = "Done";
+        moveToDone.className = "done"; // Styling for "Done" button
+        moveToDone.onclick = () => moveTask(task, "done", startDate, priority);
+        buttons.appendChild(moveToDone);
+
+        const moveBackToTodo = document.createElement("button");
+        moveBackToTodo.textContent = "To-Do";
+        moveBackToTodo.onclick = () => moveTask(task, "todo", startDate, priority);
+        buttons.appendChild(moveBackToTodo);
+    }
+
+    // Buttons for "Done" Column
+    if (columnId === "done") {
+        const moveBackToInProgress = document.createElement("button");
+        moveBackToInProgress.textContent = "In Progress";
+        moveBackToInProgress.onclick = () => moveTask(task, "in-progress", startDate, priority);
+        buttons.appendChild(moveBackToInProgress);
+    }
+
+    // Delete Button
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "Delete";
+    deleteButton.className = "delete";
+    deleteButton.onclick = () => deleteTask(task);
+    buttons.appendChild(deleteButton);
+
+    // Append buttons to task
+    task.appendChild(buttons);
+
+    // Animate fade-in effect
+    setTimeout(() => {
+        task.style.opacity = 1;
+    }, 10);
+
+    return task;
+}
+
+
+
+        function moveTask(task, targetColumnId, startDate, priority) {
+            const targetList = document.querySelector(`#${targetColumnId} .task-list`);
+            const taskText = task.querySelector("span").textContent;
+            const endDate = targetColumnId === "done" ? new Date().toISOString().split('T')[0] : null;
+            targetList.appendChild(createTaskElement(taskText, targetColumnId, startDate, priority, endDate));
+            task.remove();
+            saveTasks();
+        }
+
+        function deleteTask(task) {
+            task.remove();
+            saveTasks();
+        }
+
+        function saveTasks() {
+            const columns = document.querySelectorAll(".column");
+            const data = {};
+
+            columns.forEach(column => {
+                const columnId = column.id;
+                const tasks = Array.from(column.querySelectorAll(".task"));
+                data[columnId] = tasks.map(task => {
+                    const taskText = task.querySelector("span").textContent;
+                    const startDate = task.querySelectorAll("span")[1].textContent.split(": ")[1];
+                    const endDate = task.querySelectorAll("span")[2]?.textContent.split(": ")[1] || null;
+                    const priority = task.classList[1];
+                    return { text: taskText, startDate, priority, endDate };
+                });
+            });
+
+            localStorage.setItem("kanbanTasks", JSON.stringify(data));
+        }
+
+        function loadTasks() {
+            const data = JSON.parse(localStorage.getItem("kanbanTasks"));
+
+            if (data) {
+                Object.keys(data).forEach(columnId => {
+                    const taskList = document.querySelector(`#${columnId} .task-list`);
+                    taskList.innerHTML = "";
+
+                    data[columnId].forEach(taskData => {
+                        const task = createTaskElement(taskData.text, columnId, taskData.startDate, taskData.priority, taskData.endDate);
+                        taskList.appendChild(task);
+                    });
+                });
+            }
+        }
+
+        // Load tasks on page load
+        loadTasks();
+        function filterTasks() {
+            const searchInput = document.getElementById("search-input").value.toLowerCase();
+            const priorityFilter = document.getElementById("priority-filter").value;
+            const tasks = document.querySelectorAll(".task");
+
+            tasks.forEach(task => {
+                const taskText = task.querySelector("span").textContent.toLowerCase();
+                const taskPriority = task.classList.contains("high") ? "high"
+                                    : task.classList.contains("medium") ? "medium"
+                                    : "low";
+
+                const matchesSearch = taskText.includes(searchInput);
+                const matchesPriority = priorityFilter === "all" || taskPriority === priorityFilter;
+
+                if (matchesSearch && matchesPriority) {
+                    task.style.display = "block";
+                } else {
+                    task.style.display = "none";
+                }
+            });
+        }
+        
+    </script>
+</body>
+</html> 
+
+
