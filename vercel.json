@@ -2,14 +2,14 @@
     "version": 2,
     "builds": [
         {
-            "src": "kanban-todo-list/package.json",
+            "src": "package.json",
             "use": "@vercel/next"
         }
     ],
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "kanban-todo-list/$1"
+            "dest": "/$1"
         }
     ]
 }
